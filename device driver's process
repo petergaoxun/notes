@@ -1,0 +1,13 @@
+Is a device driver a program that runs on its own,
+or is it just a library (a group of functions) that is loaded in memory and programs can call one of its functions
+(so it is not running on its own).
+And if it is a program, does it have a process ID,
+so can I for example terminate a device driver the same way I can terminate any other process?
+
+On Linux, many device drivers are part of the kernel, not libraries or processes.
+Programs interact with these using device files (typically in /dev) and various system calls such as open, read, write, ioctl...
+(即用户进程系统通过系统调用简介call了driver的function)
+
+There are exceptions however. Some device drivers use a mixture of kernel driver stubs and user-space libraries (e.g. using UIO). Others are implemented entirely in user-space, usually on top of some bit-banging interface (UART or GPIO). In both cases, they’re generally in-process, so you won’t see a separate process, just the process that’s using the device.
+
+To “terminate” a device driver, you’d have to stop all the processes using it, then remove its kernel modules (assuming it’s built as modules), and optionally any other modules it uses and which are no longer necessary. You can list the modules on your system using lsmod, and unload them using rmmod or modprobe -r, both of which will only work if lsmod indicates they have no users.
