@@ -1,0 +1,8 @@
+There are two types of API in the Linux kernel: the "kernel–user space" API and the "kernel internal" API.
+The Linux API is the kernel–user space API, which allows programs in user space to access system resources and services of the Linux kernel.It is composed out of the System Call Interface of the Linux kernel and the subroutines in the GNU C Library (glibc).
+
+System Call Interface is the denomination for the entirety of all implemented and available system calls in a kernel.Subsystems define their own system calls and the entirety is called System Call Interface.
+
+The GNU C Library is a wrapper around the system calls of the Linux kernel; the combination of the Linux kernel System Call Interface and glibc is what builds the Linux API.
+
+在Linux系统中，glibc库中包含许多API，大多数API都对应一个系统调用，比如：应用程序中使用的接口open()，就对应同名的系统调用open()。在glibc库中，通过封装例程（Wrapper Routine）将API和系统调用关联起来。API是头文件中所定义的函数接口，而位于glibc中的封装例程则是对该API对应功能的具体实现。事实上，我们知道接口open()所要完成的功能是通过系统调用open()完成的，因此封装例程要做的工作就是先将接口open()中的参数复制到相应的寄存器中，然后引发一个异常，从而系统进入内核区执行sys_open()，最后当系统调用执行完毕后，封装例程还要将错误码返回到应用程序中。
