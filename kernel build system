@@ -1,0 +1,57 @@
+https://www.linuxjournal.com/content/kbuild-linux-kernel-build-system
+
+--linux has unified code base
+while Microsoft and Apple use different kernels for their desktop and mobile OS;
+its build system allows for creating highly customized kernel binary images;
+
+--choose the features your kernel will include at compile time
+To load a module, the kernel must contain all the kernel symbols used in the module.
+If those symbols were not included in the kernel at compile time, the module will not be loaded due to missing dependencies.
+Once a kernel module is loaded, it is part of the monolithic kernel and shares the same address space of the code that was included at kernel compile time. 
+Even when Linux supports modules, you still need to choose at kernel compile time most of the features that will be built in the kernel image and the ones that will allow you to load specific kernel modules once the kernel is executing.
+
+--conditional compilation
+to manage all these compilation options =>
+The infrastructure to build the kernel image and its modules is known as the Kernel Build System (kbuild).
+
+1\Config symbols: compilation options that can be used to compile code conditionally in source files and to decide which objects to include in a kernel image or its modules.
+--used to decide which features will be included in the final Linux kernel image. 
+
+
+2\Kconfig files: define each config symbol and its attributes, such as its type, description and dependencies. Programs that generate an option menu tree (for example, make menuconfig) read the menu entries from these files.
+
+--Each Kconfig file can describe an arbitrary number of symbols and can also include (source) other Kconfig files.
+Every directory in the kernel has one Kconfig that includes the Kconfig files of its subdirectories. 
+On top of the kernel source code directory, there is a Kconfig file that is the root of the options tree.
+(the hisilicon directory has its Kconfig file)
+menuconfig (scripts/kconfig/mconf) will invoke programs that start at this root Kconfig and recursively read the Kconfig files located in each subdirectory to build their menus.
+
+3\.config file: stores each config symbol's selected value. You can edit this file manually or use one of the many make configuration targets, such as menuconfig and xconfig, that call specialized programs to build a tree-like menu and automatically update (and create) the .config file for you.
+--
+
+
+
+4\Makefiles: normal GNU makefiles that describe the relationship between source files and the commands needed to generate each make target, such as kernel images and modules.
+
+config symbols declared and defined in Kconfig files, the value of config symbols is set in .config file 
+compilation targets: menuconfig/ xconfig, they are used as "make menuconfig", that's why referred as targets 
+These read the Kconfig files to create the menus and update the config symbols' values using the values defined in the .config file. Additionally, these tools update the .config file with the new options you chose and also can generate one if it didn't exist before.
+
+
+
+Linux kernel config/build system, aka Kconfig/kbuild
+
+Kconfig offers the user many config targets:
+
+
+
+config	Update current config utilizing a line-oriented program
+nconfig	Update current config utilizing a ncurses menu-based program
+menuconfig	Update current config utilizing a menu-based program
+xconfig	Update current config utilizing a Qt-based frontend
+gconfig	Update current config utilizing a GTK+ based frontend
+oldconfig	Update current config utilizing a provided .config as base
+localmodconfig	Update current config disabling modules not loaded
+localyesconfig	Update current config converting local mods to core
+defconfig	New config with default from Arch-supplied defconfig
+savedefconfig	Save current config as ./defconfig (minimal config)
