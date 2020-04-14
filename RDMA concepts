@@ -1,0 +1,12 @@
+QP:
+-what:
+  --conceptual:是负责双向传送message的引擎
+  --reality:包括了内存上的buffer与H/W上的逻辑实现（及寄存器）
+-How:
+  --SQ与RQ负责Tx与Rx;
+    ---RQ
+       1\sw
+       根据所收到msg的具体情况发送Ack或Nak(RNR\PSNerr\fatal)
+    ---SQ:
+       1\将Request发送至对端的RQ
+       2\根据收到的Response()
