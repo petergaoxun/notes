@@ -1,0 +1,116 @@
+Section # 1 : User command (executable programs or shell commands)
+Section # 2 : System calls (functions provided by the kernel)
+Section # 3 : Library calls (functions within program libraries)
+Section # 4 : Special files (usually found in /dev)
+Section # 5 : File formats and conventions eg /etc/passwd
+Section # 6 : Games
+Section # 7 : Miscellaneous (including macro packages and conventions),
+Section # 8 : System administration commands (usually only for root)
+Section # 9 : Kernel routines [Non standard]
+
+
+
+Socket -- Linux Socket interface
+
+From Sec2 manual page:
+int socket(int domain, int type, int protocol);
+thus it's a system call that create an endpoint for communication and returns a file descriptor that refers to that endpoint;
+
+***
+"domain" specifies a communication domain; 
+the input value corresponds to the Macro of different Address family;
+thus selects the protocol(address) family which will be used for communication.
+IBM: (domain) determines the format of the address structure to be used on socket APIs, 用什么地址通信决定了通信域是什么;
+e.g. AF_INET ~ IPv4 Internet protocols; 
+     AF_UNIX ~ 两个共享一fs的进程间的通信, 此时socket的“地址”是一个字符串(fs中的一个entry);
+     AF_XXX  while AF refers to Address Family
+     
+
+
+***
+"type" -- specifies the communication semantics
+"Some socket types may not be implemented by all protocol families."
+并不是所有的type的socket在任意domain都是存在的；
+e.g. SOCK_STREAM -- Provides sequenced, reliable, two-way, connection-based byte streams.
+                    characters are read in a continuous stream as if from a file or pipe
+                    An out-of-band data transmission mechanism may be supported.
+     连续的全双工字节流，在收发任何数据前需要进入“connected”状态;通过connect()
+     send/recv (read/write) 
+     close()      
+     SOCK_DGRAM --每次需要读整个packet
+
+***
+"protocol" -- specifies a particular protocol to be used with the socket.
+"Normally only a single protocol exists to support a particular socket type within a given protocol family, in which case protocol can be specified as 0"  以前以为会有好几个protocol在同一通信域下
+                    
+
+From:http://www.linuxhowtos.org/C_C++/socket.htm
+
+struct sockaddr_in
+{
+  short   sin_family; /* must be AF_INET */
+  u_short sin_port;
+  struct  in_addr sin_addr;
+  char    sin_zero[8]; /* Not used, must be zero */
+};
+
+A sockaddr_in is a structure containing an internet address.
+This structure is defined in netinet/in.h
+
+struct in_addr {
+	__be32	s_addr;
+};
+An in_addr structure, defined in the same header file, contains only one field, a unsigned long called s_addr.
+
+
+
+bzero((char *) &serv_addr, sizeof(serv_addr));
+The function bzero() sets all values in a buffer to zero.
+
+Computer networks are big endian
+
+
+
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+-- bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+
+bind() assigns the address specified by addr to the socket referred to by the file descriptor sockfd.
+
+
+polymorphism:
+"https://stackoverflow.com/questions/21099041"
+sockaddr v.s. sockaddr_in
+sockaddr is a generic descriptor for any kind of socket operation,
+whereas sockaddr_in is a struct specific to IP-based communication
+
+syscall:
+int listen(int sockfd, int backlog);
+"backlog": defines the maximum length to which the queue of pending connections for sockfd may grow.
+只是标记，还没有开始
+
+
+
+
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+--newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+The accept() system call causes the process to block until a client connects to the server.
+根据入参socket的pending connection队首创建一个新的connected socket并返回新的fd,原有的socket不受影响;
+在返回后入参2指向的sockaddr会写有对端的地址；
+
+ssize_t read(int fd, void *buf, size_t count);
+socket的read就是fd用的read
+"attempts to read up to count bytes from file descriptor fd into the buffer starting at buf."
+
+
+
+
+
+
+
+
+
+Common Practice: splitting the implementation of certain features between kernel and user space
+Goal: let kernel and userspace communicate
+system call, ioctl, proc filesystem, netlink socket
+Socket -- Netlink Socket
+full-duplex communication link between the two
