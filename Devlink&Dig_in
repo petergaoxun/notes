@@ -1,0 +1,10 @@
+Linux Devlink Documentation
+devlink is an API to expose device information and resources not directly related to any device class, 
+such as chip-wide/switch-ASIC-wide configuration.
+Q:谁暴露信息给谁？内核给驱动？还是相反？
+不是一个常见的接口，算上mlx5一共只有10个驱动用了；
+
+ASIC:
+application specific integrated circuit
+
+
