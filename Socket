@@ -183,6 +183,7 @@ Netlink is not a reliable protocol, best effort:
 	An acknowledgment is an NLMSG_ERROR packet with the error field set to 0.
 
 Address formats:
+	
 	struct sockaddr_nl {
 		sa_family_t     nl_family;  /* AF_NETLINK */
 		unsigned short  nl_pad;     /* Zero */
@@ -190,15 +191,6 @@ Address formats:
 		__u32           nl_groups;  /* Multicast groups mask */
 	};
 	
-
-
-
-
-
-
-
-
-
 
 
 
