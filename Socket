@@ -107,10 +107,95 @@ socket的read就是fd用的read
 
 
 
-
-
 Common Practice: splitting the implementation of certain features between kernel and user space
 Goal: let kernel and userspace communicate
-system call, ioctl, proc filesystem, netlink socket
+e.g. system call, ioctl, proc filesystem, netlink socket
+
 Socket -- Netlink Socket
-full-duplex communication link between the two
+
+What：
+	是一种Socket --
+	@userspace，同样用socket syscall创建：
+		netlink_socket = socket(AF_NETLINK, socket_type, netlink_family);
+			domain:
+				AF_NETLINK
+			type:
+				Both SOCK_RAW and SOCK_DGRAM are valid values for socket_type.
+					但是对netlink的socket而言两者是一样的;
+				netlink socket的message是带有一个或多个nlmsghdr包头的字节流；
+					struct nlmsghdr {
+						__u32 nlmsg_len;    /* Length of message including header */
+						__u16 nlmsg_type;   /* Type of message content */
+						__u16 nlmsg_flags;  /* Additional flags */
+						__u32 nlmsg_seq;    /* Sequence number */
+						__u32 nlmsg_pid;    /* Sender port ID */
+					};
+				
+			protocol:
+				有netlink_family下的多种protocol可选：
+				（决定了创建的socket将与kernel的哪个模块或是netlinkgroup通讯）
+					e.g. NETLINK_ROUTE -- rtnetlink
+						接受routing及link的更新用来修改：
+						routing tables (both IPv4 and IPv6), 
+						IP addresses, 
+						link parameters
+						neighbor setups, 
+						queueing disciplines, 
+						traffic classes
+						packet classifiers
+
+
+
+nlmsg_type:
+	NLMSG_NOOP 
+	NLMSG_ERROR:
+		payload的数据是struct:
+			struct nlmsgerr {
+			   int error;        /* Negative errno or 0 for acknowledgements */
+			   struct nlmsghdr msg;  /* Message header that caused the error */
+			};
+			
+	NLMSG_DONE
+	除上述通用的type外，每个protocol都有自己的type
+
+
+
+
+nlmsg_flags
+	NLM_F_MULTI:
+		
+	NLM_F_REQUEST:
+		Must be set on all request messages.
+		GET
+		NEW
+		
+	NLM_F_ACK:
+		Request for an acknowledgment on success.
+	
+	
+
+@kernelspace,特殊的api
+domain:AF_NETLINK
+
+
+Netlink is not a reliable protocol, best effort:
+	For reliable transfer the sender can request an acknowledgement from the receiver by setting the NLM_F_ACK flag
+	An acknowledgment is an NLMSG_ERROR packet with the error field set to 0.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
